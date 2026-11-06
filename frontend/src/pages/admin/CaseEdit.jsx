@@ -2,12 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { get, post } from '../../api.js';
 import { ItemForm } from '../../components/ItemViews.jsx';
-import { PageHeader } from '../../components/Layouts.jsx';
-import { ErrorState, RemovedBadge, Spinner, StatusBadge, TypeBadge, formatDate, formatDateTime, reference, useToast } from '../../components/ui.jsx';
+import { Button, ErrorState, Loading, PageTitle, Panel, RemovedBadge, StatusBadge, TypeBadge, formatDate, formatDateTime, useToast } from '../../components/ui.jsx';
 import { NotFound } from '../Auth.jsx';
-import { RemoveDialog, StatusDialog, statusActions, useRestore } from './Cases.jsx';
+import { ACTION_LABEL, RemoveDialog, StatusDialog, statusActions, useRestore } from './Cases.jsx';
 
-const ACTION_LABEL = { found: 'Mark found', returned: 'Mark returned', closed: 'Close case', open: 'Reopen case' };
+const back = { to: '/admin/cases', label: 'Cases' };
+
+function Facts({ rows }) {
+  return (
+    <dl className="grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-[max-content_1fr] sm:gap-y-2">
+      {rows.filter(Boolean).map(([label, value]) => (
+        <div key={label} className="contents">
+          <dt className="font-bold">{label}</dt>
+          <dd className="min-w-0 break-words">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 export default function CaseEdit() {
   const { id } = useParams();
@@ -32,7 +44,7 @@ export default function CaseEdit() {
     try {
       if (isNew) {
         const result = await post('/api/items', data);
-        toast.success(`Item saved as ${reference(result.data.id)}.`);
+        toast.success('Item saved.');
         navigate(`/admin/cases/${result.data.id}`, { replace: true });
       } else {
         data.append('_method', 'PUT');
@@ -49,82 +61,76 @@ export default function CaseEdit() {
 
   if (isNew) {
     return (
-      <div className="admin-page page-narrow">
-        <PageHeader title="Add found item" back={{ to: '/admin/cases', label: 'Cases' }} />
-        <p className="page-intro">Register something that was handed in. Open found items appear on the student browse page straight away.</p>
-        <div className="panel">
+      <>
+        <PageTitle title="Add found item" back={back} />
+        <Panel>
+          <p className="-mt-1 mb-[22px] text-[0.9rem] text-muted">Register something that was handed in. Open found items appear on the student page straight away.</p>
           <ItemForm mode="admin" submitLabel="Save item" onSubmit={save} onCancel={() => navigate('/admin/cases')} />
-        </div>
-      </div>
+        </Panel>
+      </>
     );
   }
 
   if (error?.status === 404) return <NotFound />;
-  if (error) return <div className="admin-page"><ErrorState error={error} onRetry={load} /></div>;
-  if (!item) return <div className="page-loader"><Spinner label="Loading case" /></div>;
+  if (error) return <div className="pt-8"><ErrorState error={error} onRetry={load} /></div>;
+  if (!item) return <Loading label="Loading case" />;
 
   const removed = Boolean(item.deleted_at);
+  const [primary, ...others] = statusActions(item);
 
   return (
-    <div className="admin-page">
-      <PageHeader title={`${reference(item.id)} ${item.title}`} back={{ to: '/admin/cases', label: 'Cases' }}>
-        {!removed && statusActions(item).map((s, i) => (
-          <button key={s} type="button" className={`btn ${i === 0 ? 'btn-primary' : 'btn-quiet'}`} onClick={() => setStatusTarget(s)}>{ACTION_LABEL[s]}</button>
-        ))}
-        {!removed && <button type="button" className="btn btn-danger-quiet" onClick={() => setRemoving(true)}>Remove</button>}
-        {removed && <button type="button" className="btn btn-primary" onClick={() => restore(item)}>Restore item</button>}
-      </PageHeader>
+    <>
+      <PageTitle
+        title={item.title}
+        back={back}
+        action={removed
+          ? <Button onClick={() => restore(item)}>Restore item</Button>
+          : primary && <Button onClick={() => setStatusTarget(primary)}>{ACTION_LABEL[primary]}</Button>}
+      />
 
       {removed && (
-        <div className="banner banner-warn" role="status">
+        <p className="mb-[26px] rounded-card border border-danger-line bg-danger-bg p-4 text-danger" role="status">
           <strong>Removed {formatDateTime(item.deleted_at)}.</strong> Reason: {item.delete_reason}. Students cannot see it. Restore it to edit.
-        </div>
+        </p>
       )}
 
-      <div className="case-layout">
-        <aside className="case-side">
-          <section className="panel">
-            <h2 className="panel-title">Case</h2>
-            <div className="case-badges">
-              <TypeBadge type={item.type} />
-              {removed ? <RemovedBadge /> : <StatusBadge status={item.status} />}
-            </div>
-            <dl className="kv">
-              <div><dt>Reported</dt><dd>{formatDateTime(item.created_at)}</dd></div>
-              <div><dt>Last change</dt><dd>{formatDateTime(item.updated_at)}</dd></div>
-              <div><dt>Date {item.type}</dt><dd>{formatDate(item.date_reported)}</dd></div>
-              {item.admin_note && <div><dt>Office note</dt><dd>{item.admin_note}</dd></div>}
-              {item.matched_item && (
-                <div>
-                  <dt>Linked item</dt>
-                  <dd><Link to={`/admin/cases/${item.matched_item.id}`}>{reference(item.matched_item.id)} {item.matched_item.title}</Link></dd>
-                </div>
-              )}
-            </dl>
-          </section>
-          <section className="panel">
-            <h2 className="panel-title">Reported by</h2>
-            {item.reporter ? (
-              <dl className="kv">
-                <div><dt>Name</dt><dd>{item.reporter.name}</dd></div>
-                <div><dt>Email</dt><dd><a href={`mailto:${item.reporter.email}`}>{item.reporter.email}</a></dd></div>
-                {item.reporter.student_id && <div><dt>Student ID</dt><dd>{item.reporter.student_id}</dd></div>}
-                {item.reporter.phone && <div><dt>Phone</dt><dd>{item.reporter.phone}</dd></div>}
-                <div><dt>Contact given</dt><dd>{item.contact_info || 'None'}</dd></div>
-              </dl>
-            ) : <p className="muted">Unknown</p>}
-          </section>
-        </aside>
+      <Panel aria-labelledby="case-title">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 id="case-title" className="text-xl">Case</h2>
+          <div className="flex flex-wrap gap-1.5">
+            <TypeBadge type={item.type} />
+            {removed ? <RemovedBadge /> : <StatusBadge status={item.status} />}
+          </div>
+        </div>
+        <Facts rows={[
+          ['Reported', formatDateTime(item.created_at)],
+          ['Last change', formatDateTime(item.updated_at)],
+          [item.type === 'lost' ? 'Date lost' : 'Date found', formatDate(item.date_reported)],
+          item.admin_note && ['Office note', item.admin_note],
+          item.matched_item && ['Linked item', <Link key="m" to={`/admin/cases/${item.matched_item.id}`} className="font-bold text-teal-dark hover:underline">{item.matched_item.title}</Link>],
+          ['Reported by', item.reporter ? item.reporter.name : 'Unknown'],
+          item.reporter && ['Email', <a key="e" href={`mailto:${item.reporter.email}`} className="text-teal-dark hover:underline">{item.reporter.email}</a>],
+          item.reporter?.student_id && ['Student ID', item.reporter.student_id],
+          item.reporter?.phone && ['Phone', item.reporter.phone],
+          ['Contact given', item.contact_info || 'None'],
+        ]} />
 
-        <section className="panel case-form">
-          <h2 className="panel-title">Details</h2>
-          {removed ? (
-            <p className="muted">{item.description}</p>
-          ) : (
-            <ItemForm key={formKey} mode="admin" initial={item} submitLabel="Save changes" onSubmit={save} />
-          )}
-        </section>
-      </div>
+        {!removed && (
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-line pt-4">
+            {others.map((s) => <Button key={s} variant="secondary" size="sm" onClick={() => setStatusTarget(s)}>{ACTION_LABEL[s]}</Button>)}
+            <Button variant="danger" size="sm" onClick={() => setRemoving(true)}>Remove item</Button>
+          </div>
+        )}
+      </Panel>
+
+      <Panel aria-labelledby="details-title">
+        <h2 id="details-title" className="mb-4 text-xl">Details</h2>
+        {removed ? (
+          <p className="text-muted">{item.description}</p>
+        ) : (
+          <ItemForm key={formKey} mode="admin" initial={item} submitLabel="Save changes" onSubmit={save} />
+        )}
+      </Panel>
 
       <StatusDialog
         item={statusTarget ? item : null}
@@ -133,6 +139,6 @@ export default function CaseEdit() {
         onDone={(updated) => { setStatusTarget(null); setItem(updated); }}
       />
       <RemoveDialog item={removing ? item : null} onClose={() => setRemoving(false)} onDone={() => { setRemoving(false); load(); }} />
-    </div>
+    </>
   );
 }

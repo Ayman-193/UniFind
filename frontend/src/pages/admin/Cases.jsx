@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { del, fieldError, get, patch, post } from '../../api.js';
 import { FilterBar, ItemGrid, ItemTable, ViewToggle, useDebounced, usePaged, useViewMode } from '../../components/ItemViews.jsx';
-import { PageHeader } from '../../components/Layouts.jsx';
 import {
-  ConfirmDialog, EmptyState, ErrorState, Field, Modal, Pagination, SkeletonCards, SkeletonRows, Spinner,
-  formatDate, reference, useToast,
+  Button, ButtonLink, ConfirmDialog, EmptyState, ErrorState, Field, Loading, Modal, PageTitle, Pagination, Panel, Spinner,
+  formatDate, useToast,
 } from '../../components/ui.jsx';
+import { cn } from '@/lib/utils.js';
 
 const COLLECT_NOTE = 'Collect it from Student Affairs, room 12, Sunday to Thursday 8:00 to 14:00. Bring your student card.';
 
@@ -21,6 +21,8 @@ const STATUS_COPY = {
   open: { title: 'Reopen case', button: 'Reopen case', toast: 'Case reopened.' },
 };
 
+export const ACTION_LABEL = { found: 'Mark found', returned: 'Mark returned', closed: 'Close case', open: 'Reopen case' };
+
 function MatchPicker({ value, onChange, error }) {
   const [search, setSearch] = useState('');
   const debounced = useDebounced(search);
@@ -34,29 +36,28 @@ function MatchPicker({ value, onChange, error }) {
     return () => { live = false; };
   }, [debounced]);
 
+  const option = (checked) => cn('flex cursor-pointer items-start gap-2 rounded-input border p-2.5 text-sm', checked ? 'border-teal bg-teal-soft' : 'border-line');
+
   return (
-    <fieldset className={`field match-picker${error ? ' has-error' : ''}`}>
-      <legend>Matching found item</legend>
-      <p className="field-hint">Link the found item that belongs to this student. It is then reserved and leaves the public list.</p>
+    <fieldset>
+      <legend className="text-[0.92rem] font-bold">Matching found item</legend>
+      <p className="mt-1 text-sm text-muted">Link the found item that belongs to this student. It is then reserved and leaves the public list.</p>
       <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search found items" aria-label="Search found items" />
-      <div className="match-options" role="radiogroup" aria-label="Found items">
-        <label className={`match-option${!value ? ' is-on' : ''}`}>
-          <input type="radio" name="match" checked={!value} onChange={() => onChange(null)} />
-          <span><strong>No link</strong><small>Mark found without linking an item</small></span>
+      <div className="mt-2 max-h-56 space-y-1.5 overflow-y-auto" role="radiogroup" aria-label="Found items">
+        <label className={option(!value)}>
+          <input type="radio" name="match" checked={!value} onChange={() => onChange(null)} className="mt-1" />
+          <span>No link</span>
         </label>
-        {options === null && <p className="muted"><Spinner /> Loading found items</p>}
-        {options?.length === 0 && <p className="muted">No open found items match.</p>}
+        {options === null && <p className="flex items-center gap-2 text-sm text-muted"><Spinner /> Loading found items</p>}
+        {options?.length === 0 && <p className="text-sm text-muted">No open found items match.</p>}
         {options?.map((o) => (
-          <label key={o.id} className={`match-option${value === o.id ? ' is-on' : ''}`}>
-            <input type="radio" name="match" checked={value === o.id} onChange={() => onChange(o.id)} />
-            <span>
-              <strong>{reference(o.id)} {o.title}</strong>
-              <small>{o.category?.name}, {o.location?.name}, {formatDate(o.date_reported)}</small>
-            </span>
+          <label key={o.id} className={option(value === o.id)}>
+            <input type="radio" name="match" checked={value === o.id} onChange={() => onChange(o.id)} className="mt-1" />
+            <span><strong>{o.title}</strong><br /><span className="text-muted">{o.location?.name}, {formatDate(o.date_reported)}</span></span>
           </label>
         ))}
       </div>
-      {error && <p className="field-error">{error}</p>}
+      {error && <p className="mt-1 text-sm font-bold text-danger">{error}</p>}
     </fieldset>
   );
 }
@@ -101,11 +102,11 @@ export function StatusDialog({ item, status, onClose, onDone }) {
       title={`${copy.title}: ${item?.title || ''}`}
       onClose={onClose}
       busy={busy}
-      size={showPicker ? 'lg' : 'md'}
+      wide={showPicker}
       footer={(
         <>
-          <button type="button" className="btn btn-quiet" onClick={onClose} disabled={busy}>Cancel</button>
-          <button type="button" className="btn btn-primary" onClick={save} disabled={busy}>{busy && <Spinner />}{copy.button}</button>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button onClick={save} disabled={busy} busy={busy}>{copy.button}</Button>
         </>
       )}
     >
@@ -147,7 +148,7 @@ export function RemoveDialog({ item, onClose, onDone }) {
   return (
     <ConfirmDialog
       open={Boolean(item)}
-      title={`Remove ${item ? reference(item.id) : ''}?`}
+      title={`Remove “${item?.title || ''}”?`}
       message="The item disappears for students. It stays in the database and you can restore it later."
       confirmLabel="Remove item"
       danger
@@ -156,7 +157,7 @@ export function RemoveDialog({ item, onClose, onDone }) {
       onCancel={onClose}
     >
       <Field label="Reason" required error={error}>
-        {(p) => <input {...p} value={reason} onChange={(e) => { setReason(e.target.value); setError(null); }} maxLength={255} placeholder="For example: duplicate request" data-autofocus />}
+        {(p) => <input {...p} value={reason} onChange={(e) => { setReason(e.target.value); setError(null); }} maxLength={255} placeholder="e.g. Duplicate request" data-autofocus />}
       </Field>
     </ConfirmDialog>
   );
@@ -167,7 +168,7 @@ export function useRestore(onDone) {
   return async (item) => {
     try {
       const result = await post(`/api/admin/items/${item.id}/restore`);
-      toast.success(`Restored ${reference(item.id)}.`);
+      toast.success(`Restored “${item.title}”.`);
       onDone(result.data);
     } catch (e) {
       toast.error(e.message);
@@ -183,56 +184,11 @@ export function statusActions(item) {
   return ['open'];
 }
 
-const ACTION_LABEL = { found: 'Mark found', returned: 'Mark returned', closed: 'Close', open: 'Reopen' };
-
-/* ------------------------------------------------------------------ */
-/* Row menu                                                            */
-/* ------------------------------------------------------------------ */
-
-function RowMenu({ item, onStatus, onRemove, onRestore }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    const key = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', key);
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', key); };
-  }, [open]);
-
-  if (item.deleted_at) {
-    return <button type="button" className="btn btn-quiet btn-sm" onClick={() => onRestore(item)}>Restore</button>;
-  }
-
-  const [primary, ...rest] = statusActions(item);
-  const run = (fn) => () => { setOpen(false); fn(); };
-
-  return (
-    <div className="row-actions" ref={ref}>
-      {primary && <button type="button" className="btn btn-quiet btn-sm" onClick={() => onStatus(item, primary)}>{ACTION_LABEL[primary]}</button>}
-      <button type="button" className="icon-button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <span className="sr-only">More actions for {item.title}</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
-      </button>
-      {open && (
-        <div className="menu" role="menu">
-          {rest.map((s) => <button key={s} type="button" role="menuitem" onClick={run(() => onStatus(item, s))}>{ACTION_LABEL[s]}</button>)}
-          <button type="button" role="menuitem" onClick={run(() => navigate(`/admin/cases/${item.id}`))}>Edit</button>
-          <button type="button" role="menuitem" className="menu-danger" onClick={run(() => onRemove(item))}>Remove</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-const FILTER_KEYS = ['search', 'type', 'status', 'category_id', 'location_id', 'date_from', 'date_to', 'trashed'];
+const FILTER_KEYS = ['search', 'type', 'status', 'category_id', 'location_id', 'trashed'];
 
 export default function Cases() {
   const [params, setParams] = useSearchParams();
@@ -242,45 +198,52 @@ export default function Cases() {
 
   const { rows, meta, loading, error, reload } = usePaged('/api/items', { ...filters, page, per_page: 15 });
   const [statusTarget, setStatusTarget] = useState(null);
-  const [removeTarget, setRemoveTarget] = useState(null);
   const restore = useRestore(() => reload());
 
   function setFilters(next) {
-    const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => v));
-    setParams(clean);
+    setParams(Object.fromEntries(Object.entries(next).filter(([, v]) => v)));
   }
   const setPage = (p) => setParams({ ...Object.fromEntries(params), page: String(p) });
 
   const linkFor = (item) => `/admin/cases/${item.id}`;
-  const actions = (item) => (
-    <RowMenu item={item} onStatus={(i, s) => setStatusTarget({ item: i, status: s })} onRemove={setRemoveTarget} onRestore={restore} />
-  );
+  const actions = (item) => {
+    if (item.deleted_at) return <Button variant="secondary" size="sm" onClick={() => restore(item)}>Restore</Button>;
+    const [primary] = statusActions(item);
+    return primary ? <Button variant="secondary" size="sm" onClick={() => setStatusTarget({ item, status: primary })}>{ACTION_LABEL[primary]}</Button> : null;
+  };
 
   return (
-    <div className="admin-page">
-      <PageHeader title="Cases">
-        <ViewToggle value={view} onChange={setView} />
-        <Link to="/admin/cases/new" className="btn btn-primary">Add found item</Link>
-      </PageHeader>
+    <>
+      <PageTitle title="Cases" action={<ButtonLink to="/admin/cases/new">Add found item</ButtonLink>} />
 
-      <FilterBar value={filters} onChange={setFilters} fields={['search', 'type', 'status', 'category', 'location', 'dates', 'trashed']} />
-
-      {error ? (
-        <ErrorState error={error} onRetry={reload} />
-      ) : loading && !rows.length ? (
-        view === 'cards' ? <SkeletonCards /> : <SkeletonRows rows={8} cols={8} />
-      ) : rows.length === 0 ? (
-        <EmptyState title="No cases match these filters" action={<button type="button" className="btn btn-quiet" onClick={() => setFilters({})}>Clear filters</button>}>
-          Change the filters, or add a found item that was just handed in.
-        </EmptyState>
-      ) : (
-        <div className={loading ? 'is-refreshing' : ''} aria-busy={loading}>
-          {view === 'cards'
-            ? <ItemGrid items={rows} linkFor={linkFor} />
-            : <ItemTable items={rows} linkFor={linkFor} columns={['ref', 'type', 'title', 'category', 'location', 'date', 'reporter', 'status']} renderActions={actions} caption="Cases" />}
-          <Pagination meta={meta} onPage={setPage} />
+      <Panel aria-labelledby="cases-title">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 id="cases-title" className="text-2xl">All cases</h2>
+          <div className="flex items-center gap-3">
+            {meta && <span className="text-sm text-muted" aria-live="polite">{meta.total} {meta.total === 1 ? 'case' : 'cases'}</span>}
+            <ViewToggle value={view} onChange={setView} />
+          </div>
         </div>
-      )}
+
+        <FilterBar value={filters} onChange={setFilters} admin />
+
+        {error ? (
+          <ErrorState error={error} onRetry={reload} />
+        ) : loading && !rows.length ? (
+          <Loading label="Loading cases" />
+        ) : rows.length === 0 ? (
+          <EmptyState title="No cases match these filters" action={<Button variant="secondary" onClick={() => setFilters({})}>Clear filters</Button>}>
+            Change the filters, or add a found item that was just handed in.
+          </EmptyState>
+        ) : (
+          <div aria-busy={loading} className={loading ? 'opacity-60' : undefined}>
+            {view === 'cards'
+              ? <ItemGrid items={rows} linkFor={linkFor} />
+              : <ItemTable items={rows} linkFor={linkFor} columns={['type', 'title', 'location', 'date', 'reporter', 'status']} renderActions={actions} caption="Cases" />}
+            <Pagination meta={meta} onPage={setPage} />
+          </div>
+        )}
+      </Panel>
 
       <StatusDialog
         item={statusTarget?.item}
@@ -288,7 +251,6 @@ export default function Cases() {
         onClose={() => setStatusTarget(null)}
         onDone={() => { setStatusTarget(null); reload(); }}
       />
-      <RemoveDialog item={removeTarget} onClose={() => setRemoveTarget(null)} onDone={() => { setRemoveTarget(null); reload(); }} />
-    </div>
+    </>
   );
 }

@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { fieldError } from '../api.js';
 import { homeFor, useAuth } from '../auth.jsx';
-import { Brand } from '../components/Layouts.jsx';
-import { Field, Spinner, useToast } from '../components/ui.jsx';
+import { Button, ButtonLink, Field, Hero, Panel, useToast } from '../components/ui.jsx';
 
 function allowedFor(user, path) {
   if (!path) return false;
@@ -54,49 +53,31 @@ export function Login() {
   }
 
   return (
-    <div className="login-page">
-      <section className="login-aside" aria-hidden="false">
-        <Brand to="/login" />
-        <div className="login-aside-copy">
-          <p className="login-display">Find what matters.</p>
-          <p>The campus Lost &amp; Found Office, online. Check what has been handed in, report what you lost, and get told when it turns up.</p>
-        </div>
-        <p className="login-aside-foot">Student Affairs building, room 12</p>
-      </section>
-
-      <main className="login-main" id="main">
-        <div className="login-card">
-          <h1>Sign in</h1>
-          <p className="login-sub">Use your university account. Accounts are created by the Lost &amp; Found Office.</p>
-
-          <form onSubmit={submit} noValidate className="login-form">
-            {formError && <p className="form-alert" role="alert">{formError}</p>}
-            <Field label="Email" error={errors.email}>
-              {(p) => <input {...p} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@uqu.edu.sa" />}
-            </Field>
-            <Field label="Password" error={errors.password}>
-              {(p) => <input {...p} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
-            </Field>
-            <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-              {busy && <Spinner />}Sign in
-            </button>
-          </form>
-        </div>
-      </main>
-    </div>
+    <>
+      <Hero title="Find what matters." text="The campus Lost & Found Office, online. Check what has been handed in and report what you lost." />
+      <Panel className="max-w-md" aria-labelledby="signin-title">
+        <h2 id="signin-title" className="mb-1 text-2xl">Sign in</h2>
+        <p className="mb-5 text-[0.9rem] text-muted">Use your university account. Accounts are created by the Lost &amp; Found Office.</p>
+        <form onSubmit={submit} noValidate className="space-y-[15px]">
+          {formError && <p className="rounded-card border border-danger-line bg-danger-bg p-3 text-sm text-danger" role="alert">{formError}</p>}
+          <Field label="Email" error={errors.email}>
+            {(p) => <input {...p} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@uqu.edu.sa" />}
+          </Field>
+          <Field label="Password" error={errors.password}>
+            {(p) => <input {...p} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
+          </Field>
+          <Button type="submit" className="w-full" busy={busy} disabled={busy}>Sign in</Button>
+        </form>
+      </Panel>
+    </>
   );
 }
 
 function StatusPage({ code, title, children }) {
   const { user } = useAuth();
   return (
-    <main className="status-page" id="main">
-      <Brand to={homeFor(user)} light={false} />
-      <p className="status-code" aria-hidden="true">{code}</p>
-      <h1>{title}</h1>
-      <p>{children}</p>
-      <Link to={homeFor(user)} className="btn btn-primary">{user ? 'Go to my home page' : 'Go to sign in'}</Link>
-    </main>
+    <Hero title={title} text={children} eyebrow={code}
+      action={<ButtonLink to={homeFor(user)}>{user ? 'Go to my home page' : 'Go to sign in'}</ButtonLink>} />
   );
 }
 

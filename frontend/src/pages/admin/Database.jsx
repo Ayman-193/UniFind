@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { del, fieldError, get, post, put } from '../../api.js';
 import { resetMetaCache, useDebounced, usePaged } from '../../components/ItemViews.jsx';
-import { PageHeader } from '../../components/Layouts.jsx';
-import { ConfirmDialog, EmptyState, ErrorState, Field, Modal, Pagination, SkeletonRows, Spinner, formatDateTime, useToast } from '../../components/ui.jsx';
+import {
+  Button, ConfirmDialog, EmptyState, ErrorState, Field, Loading, Modal, PageTitle, Pagination, Panel, Table, formatDateTime, useToast,
+} from '../../components/ui.jsx';
+import { cn } from '@/lib/utils.js';
 
 /* ------------------------------------------------------------------ */
 /* Cell rendering                                                      */
@@ -11,13 +13,12 @@ import { ConfirmDialog, EmptyState, ErrorState, Field, Modal, Pagination, Skelet
 
 function Cell({ column, row }) {
   const value = row[column.name];
-  if (value === null || value === undefined || value === '') return <span className="muted">-</span>;
+  if (value === null || value === undefined || value === '') return <span className="text-muted">-</span>;
   switch (column.type) {
-    case 'bool': return <span className={`bool bool-${value ? 'yes' : 'no'}`}>{value ? 'Yes' : 'No'}</span>;
+    case 'bool': return <span className={value ? 'font-bold text-found' : 'font-bold text-danger'}>{value ? 'Yes' : 'No'}</span>;
     case 'fk': return <span>{row._labels?.[column.name] || `#${value}`}</span>;
-    case 'datetime': return <span className="nowrap">{formatDateTime(String(value).replace(' ', 'T'))}</span>;
-    case 'enum': return <span className="enum-pill">{value}</span>;
-    case 'text': return <span className="cell-clip" title={String(value)}>{String(value)}</span>;
+    case 'datetime': return <span className="whitespace-nowrap">{formatDateTime(String(value).replace(' ', 'T'))}</span>;
+    case 'text': return <span className="line-clamp-2 max-w-xs" title={String(value)}>{String(value)}</span>;
     default: return <span>{String(value)}</span>;
   }
 }
@@ -95,10 +96,10 @@ function RowForm({ table, columns, row, onClose, onSaved }) {
         </select>
       );
       case 'bool': return (
-        <label className="switch">
-          <input type="checkbox" id={p.id} checked={Boolean(v)} onChange={(e) => set(c.name, e.target.checked)} />
+        <span className="mt-2 flex items-center gap-2">
+          <input type="checkbox" id={p.id} className="size-4 accent-teal" checked={Boolean(v)} onChange={(e) => set(c.name, e.target.checked)} />
           <span>{v ? 'Yes' : 'No'}</span>
-        </label>
+        </span>
       );
       case 'password': return <input {...p} type="password" autoComplete="new-password" value={v} onChange={(e) => set(c.name, e.target.value)} placeholder={isEdit ? 'Leave blank to keep the current password' : ''} required={!isEdit} />;
       case 'email': return <input {...p} type="email" value={v} maxLength={c.max} onChange={(e) => set(c.name, e.target.value)} />;
@@ -112,21 +113,21 @@ function RowForm({ table, columns, row, onClose, onSaved }) {
   return (
     <Modal
       open
-      size="lg"
+      wide
       busy={busy}
       title={isEdit ? `Edit ${table.label.toLowerCase()} row ${row.id}` : `Add a row to ${table.label.toLowerCase()}`}
       onClose={onClose}
       footer={(
         <>
-          <button type="button" className="btn btn-quiet" onClick={onClose} disabled={busy}>Cancel</button>
-          <button type="submit" form="row-form" className="btn btn-primary" disabled={busy}>{busy && <Spinner />}{isEdit ? 'Save row' : 'Add row'}</button>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button type="submit" form="row-form" disabled={busy} busy={busy}>{isEdit ? 'Save row' : 'Add row'}</Button>
         </>
       )}
     >
-      <form id="row-form" className="form-grid" onSubmit={save} noValidate>
+      <form id="row-form" className="grid gap-[15px] sm:grid-cols-2" onSubmit={save} noValidate>
         {editable.map((c) => (
           <Field key={c.name} label={c.label} required={c.required && !(isEdit && c.type === 'password')} error={errors[c.name]}
-            className={c.type === 'text' ? 'span-2' : ''}
+            className={c.type === 'text' ? 'sm:col-span-2' : undefined}
             hint={c.type === 'password' ? (isEdit ? 'Passwords are stored hashed and never shown.' : 'At least 8 characters. Stored hashed.') : undefined}>
             {(p) => control(c, p)}
           </Field>
@@ -182,55 +183,55 @@ function TableView({ name, onCountsChanged }) {
   if (error) return <ErrorState error={error} onRetry={reload} />;
 
   return (
-    <section className="db-table" aria-labelledby="db-table-title">
-      <div className="db-toolbar">
-        <h2 id="db-table-title">{table?.label || name}{table?.readonly && <span className="readonly-note">Read-only</span>}</h2>
-        <label className="filter filter-search">
-          <span className="sr-only">Search {name}</span>
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4 4" /></svg>
-          <input type="search" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search this table" />
-        </label>
-        {table && !table.readonly && <button type="button" className="btn btn-primary" onClick={() => setEditing('new')}>Add row</button>}
+    <section aria-labelledby="db-table-title">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-[15px]">
+        <h2 id="db-table-title" className="text-2xl">
+          {table?.label || name}
+          {table?.readonly && <span className="ml-2 align-middle text-sm font-normal text-muted">(read-only)</span>}
+        </h2>
+        <div className="flex w-full flex-wrap items-end gap-[15px] sm:w-auto">
+          <label className="block min-w-0 flex-1 text-[0.92rem] font-bold sm:w-64">
+            Search
+            <input type="search" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search this table" />
+          </label>
+          {table && !table.readonly && <Button onClick={() => setEditing('new')}>Add row</Button>}
+        </div>
       </div>
 
       {!table || (loading && !rows.length) ? (
-        <SkeletonRows rows={6} cols={5} />
+        <Loading label="Loading rows" />
       ) : rows.length === 0 ? (
         <EmptyState title={search ? 'No rows match this search' : 'This table is empty'} />
       ) : (
-        <div className={loading ? 'is-refreshing' : ''}>
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  {listed.map((c) => (
-                    <th key={c.name} scope="col" aria-sort={sort.col === c.name ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                      <button type="button" className="sort-btn" onClick={() => toggleSort(c.name)}>
-                        {c.label}
-                        <span className="sort-mark" aria-hidden="true">{sort.col === c.name ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
-                      </button>
-                    </th>
-                  ))}
-                  {!table.readonly && <th scope="col"><span className="sr-only">Actions</span></th>}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    {listed.map((c) => <td key={c.name} data-label={c.label}><Cell column={c} row={row} /></td>)}
-                    {!table.readonly && (
-                      <td className="cell-actions">
-                        <div className="row-actions">
-                          <button type="button" className="btn btn-quiet btn-sm" onClick={() => setEditing(row)}>Edit<span className="sr-only"> row {row.id}</span></button>
-                          <button type="button" className="btn btn-danger-quiet btn-sm" onClick={() => setDeleting(row)}>Delete<span className="sr-only"> row {row.id}</span></button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
+        <div aria-busy={loading} className={loading ? 'opacity-60' : undefined}>
+          <Table caption={table.label}>
+            <thead>
+              <tr>
+                {listed.map((c) => (
+                  <th key={c.name} scope="col" aria-sort={sort.col === c.name ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                    <button type="button" className="cursor-pointer font-bold hover:text-ink" onClick={() => toggleSort(c.name)}>
+                      {c.label}
+                      <span aria-hidden="true">{sort.col === c.name ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}</span>
+                    </button>
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                {!table.readonly && <th scope="col"><span className="sr-only">Actions</span></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  {listed.map((c) => <td key={c.name}><Cell column={c} row={row} /></td>)}
+                  {!table.readonly && (
+                    <td className="text-right whitespace-nowrap">
+                      <Button variant="secondary" size="sm" onClick={() => setEditing(row)}>Edit<span className="sr-only"> row {row.id}</span></Button>
+                      <Button variant="danger" size="sm" className="ml-2" onClick={() => setDeleting(row)}>Delete<span className="sr-only"> row {row.id}</span></Button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
           <Pagination meta={meta} onPage={setPage} />
         </div>
       )}
@@ -272,24 +273,25 @@ export default function Database() {
   const active = tables?.find((t) => t.name === current) ? current : tables?.[0]?.name;
 
   return (
-    <div className="admin-page">
-      <PageHeader title="Database" />
-      <p className="page-intro">Edit the tables UniFind uses. Only these tables are available, passwords are never shown, and every change is written to the activity log.</p>
-
-      {error ? <ErrorState error={error} onRetry={loadTables} /> : !tables ? <SkeletonRows rows={2} cols={5} /> : (
-        <div className="db-layout">
-          <nav className="db-tables" aria-label="Tables">
-            {tables.map((t) => (
-              <button key={t.name} type="button" className={`db-table-btn${t.name === active ? ' is-on' : ''}`} aria-current={t.name === active ? 'true' : undefined}
-                onClick={() => setParams({ table: t.name })}>
-                <span>{t.label}</span>
-                <span className="db-count">{t.rows}</span>
-              </button>
-            ))}
-          </nav>
-          {active && <TableView key={active} name={active} onCountsChanged={loadTables} />}
-        </div>
-      )}
-    </div>
+    <>
+      <PageTitle title="Database" />
+      <Panel>
+        <p className="-mt-1 mb-4 text-[0.9rem] text-muted">Edit the tables UniFind uses. Passwords are never shown, and every change is written to the activity log.</p>
+        {error ? <ErrorState error={error} onRetry={loadTables} /> : !tables ? <Loading label="Loading tables" /> : (
+          <>
+            <nav aria-label="Tables" className="mb-6 flex flex-wrap gap-2">
+              {tables.map((t) => (
+                <button key={t.name} type="button" aria-current={t.name === active ? 'true' : undefined} onClick={() => setParams({ table: t.name })}
+                  className={cn('cursor-pointer rounded-full border px-3 py-1 text-sm font-bold',
+                    t.name === active ? 'border-teal bg-teal text-white' : 'border-field bg-white text-ink hover:bg-page')}>
+                  {t.label} <span className={t.name === active ? 'text-white/80' : 'text-muted'}>({t.rows})</span>
+                </button>
+              ))}
+            </nav>
+            {active && <TableView key={active} name={active} onCountsChanged={loadTables} />}
+          </>
+        )}
+      </Panel>
+    </>
   );
 }

@@ -1,144 +1,104 @@
-import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { homeFor, useAuth } from '../auth.jsx';
-import { Spinner, useToast } from './ui.jsx';
+import { cn } from '@/lib/utils.js';
+import { Loading, useToast } from './ui.jsx';
 
-export function Brand({ to = '/', light = true }) {
-  return (
-    <Link to={to} className={`brand${light ? ' brand-light' : ''}`}>
-      <svg viewBox="0 0 32 32" aria-hidden="true" className="brand-mark">
-        <circle cx="14" cy="14" r="8" fill="none" stroke="currentColor" strokeWidth="3" />
-        <path d="M20 20l6.5 6.5" stroke="#5fc3cf" strokeWidth="3.6" strokeLinecap="round" />
-      </svg>
-      <span>UniFind</span>
-    </Link>
-  );
-}
+const container = 'mx-auto w-full max-w-[1000px] px-4 sm:px-[22px]';
 
-function FullPageLoader() {
-  return <div className="page-loader"><Spinner label="Loading" /></div>;
-}
+const NAV = {
+  student: [
+    { to: '/app', label: 'Found items', end: true },
+    { to: '/app/requests', label: 'My requests', end: true },
+    { to: '/app/requests/new', label: 'Report a lost item', end: true },
+  ],
+  admin: [
+    { to: '/admin', label: 'Dashboard', end: true },
+    { to: '/admin/cases', label: 'Cases', end: true },
+    { to: '/admin/cases/new', label: 'Add found item', end: true },
+    { to: '/admin/database', label: 'Database', end: false },
+    { to: '/admin/activity', label: 'Activity log', end: true },
+  ],
+};
 
-/** Route guard: signed-out users go to /login (remembering the page), wrong roles to /403. */
-export function RequireRole({ role, children }) {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) return <FullPageLoader />;
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-  if (role && user.role !== role) return <Navigate to="/403" replace state={{ from: location.pathname }} />;
-  return children;
-}
-
-function useSignOut() {
-  const { logout } = useAuth();
+/** The prototype's navy top bar: "UniFind" and the tagline, plus the menu when signed in. */
+function TopBar() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  return async () => {
+
+  async function signOut() {
     await logout();
     toast.success('Signed out.');
     navigate('/login', { replace: true });
-  };
-}
-
-function SkipLink() {
-  return <a href="#main" className="skip-link">Skip to content</a>;
-}
-
-export function StudentLayout() {
-  const { user } = useAuth();
-  const signOut = useSignOut();
+  }
 
   return (
-    <div className="student-shell">
-      <SkipLink />
-      <header className="topbar">
-        <div className="container topbar-inner">
-          <Brand to="/app" />
-          <nav className="topnav" aria-label="Main">
-            <NavLink to="/app" end>Found items</NavLink>
-            <NavLink to="/app/requests" end>My requests</NavLink>
-          </nav>
-          <div className="topbar-end">
-            <Link to="/app/requests/new" className="btn btn-accent btn-sm">Report a lost item</Link>
-            <span className="topbar-user" title={user?.email}>{user?.name}</span>
-            <button type="button" className="btn btn-ghost-light btn-sm" onClick={signOut}>Sign out</button>
+    <header className="on-navy bg-navy text-white">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded-button focus:bg-white focus:px-3 focus:py-2 focus:text-ink">Skip to content</a>
+      <div className={cn(container, 'flex items-center justify-between gap-4 py-[17px]')}>
+        <Link to={homeFor(user)} className="flex items-center gap-2 text-[1.55rem] font-extrabold text-white no-underline">
+          <Search className="size-6" strokeWidth={2.75} aria-hidden="true" />UniFind
+        </Link>
+        {user ? (
+          <div className="flex min-w-0 items-center gap-3 text-sm">
+            <span className="hidden truncate text-tagline sm:inline" title={user.email}>{user.name}</span>
+            <button type="button" onClick={signOut} className="cursor-pointer rounded-button border border-white/40 px-3 py-1.5 font-bold text-white hover:bg-white/10">Sign out</button>
           </div>
-        </div>
-      </header>
-      <main id="main" tabIndex={-1}>
-        <Outlet />
-      </main>
-      <footer className="site-footer container">
-        <p>UniFind is run by the university Lost &amp; Found Office, Student Affairs building, room 12.</p>
-        <p>Sunday to Thursday, 8:00 to 14:00</p>
-      </footer>
-    </div>
-  );
-}
-
-const ADMIN_NAV = [
-  { to: '/admin', label: 'Dashboard', end: true, icon: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z' },
-  { to: '/admin/cases', label: 'Cases', end: true, icon: 'M4 6h16M4 12h16M4 18h10' },
-  { to: '/admin/cases/new', label: 'Add found item', end: true, icon: 'M12 5v14M5 12h14' },
-  { to: '/admin/database', label: 'Database', end: false, icon: 'M12 4c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3' },
-  { to: '/admin/activity', label: 'Activity log', end: true, icon: 'M4 12h4l2-6 4 12 2-6h4' },
-];
-
-export function AdminLayout() {
-  const { user } = useAuth();
-  const signOut = useSignOut();
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
-
-  useEffect(() => { setOpen(false); }, [location.pathname]);
-
-  return (
-    <div className={`admin-shell${open ? ' nav-open' : ''}`}>
-      <SkipLink />
-      <aside className="sidebar">
-        <div className="sidebar-head">
-          <Brand to="/admin" />
-          <button type="button" className="icon-button menu-toggle" aria-expanded={open} aria-controls="admin-nav" onClick={() => setOpen((v) => !v)}>
-            <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? 'M6 6l12 12M18 6L6 18' : 'M4 7h16M4 12h16M4 17h16'} /></svg>
-          </button>
-        </div>
-        <p className="sidebar-office">Lost &amp; Found Office</p>
-        <nav id="admin-nav" className="sidenav" aria-label="Admin">
-          {ADMIN_NAV.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.end}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={item.icon} /></svg>
-              {item.label}
-            </NavLink>
-          ))}
-          <div className="sidebar-foot">
-            <span className="sidebar-user">{user?.name}<small>{user?.email}</small></span>
-            <button type="button" className="btn btn-ghost-light btn-sm" onClick={signOut}>Sign out</button>
+        ) : (
+          <span className="hidden text-[0.9rem] text-tagline sm:inline">Campus Lost &amp; Found</span>
+        )}
+      </div>
+      {user && (
+        <nav aria-label="Main" className="border-t border-white/15">
+          <div className={cn(container, 'flex flex-wrap gap-x-5 gap-y-1 py-2 text-[0.95rem]')}>
+            {NAV[user.role].map((item) => (
+              <NavLink key={item.to} to={item.to} end={item.end}
+                className={({ isActive }) => cn('border-b-2 py-1 font-bold no-underline', isActive ? 'border-white text-white' : 'border-transparent text-tagline hover:text-white')}>
+                {item.label}
+              </NavLink>
+            ))}
           </div>
         </nav>
-      </aside>
-      <main id="main" className="admin-main" tabIndex={-1}>
+      )}
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className={cn(container, 'pt-1.5 pb-[30px] text-[0.85rem] text-muted-strong')}>
+      UniFind &bull; Lost &amp; Found Office, Student Affairs building, room 12 &bull; Sunday to Thursday, 8:00 to 14:00
+    </footer>
+  );
+}
+
+/** Top bar, page content and footer: the same frame for students, the admin and the sign-in page. */
+export function AppLayout() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <TopBar />
+      <main id="main" tabIndex={-1} className={cn(container, 'flex-1 outline-none')}>
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
+}
+
+/** Route guard: signed-out users go to /login (remembering the page), wrong roles to /403. */
+export function RequireRole({ role }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <Loading />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+  if (role && user.role !== role) return <Navigate to="/403" replace state={{ from: location.pathname }} />;
+  return <Outlet />;
 }
 
 export function HomeRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <FullPageLoader />;
+  if (loading) return <Loading />;
   return <Navigate to={homeFor(user)} replace />;
-}
-
-export function PageHeader({ title, children, back }) {
-  return (
-    <div className="page-header">
-      <div>
-        {back && <Link to={back.to} className="back-link">{back.label}</Link>}
-        <h1>{title}</h1>
-      </div>
-      {children && <div className="page-header-actions">{children}</div>}
-    </div>
-  );
 }

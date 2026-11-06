@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { post } from '../../api.js';
 import { ItemForm } from '../../components/ItemViews.jsx';
-import { PageHeader } from '../../components/Layouts.jsx';
-import { useToast } from '../../components/ui.jsx';
+import { PageTitle, Panel, useToast } from '../../components/ui.jsx';
 
 export default function NewRequest() {
   const navigate = useNavigate();
@@ -20,15 +19,14 @@ export default function NewRequest() {
   }
 
   return (
-    <div className="container page page-narrow">
-      <PageHeader title="Report a lost item" back={{ to: '/app/requests', label: 'My requests' }} />
-      <p className="page-intro">
-        Tell the Lost &amp; Found Office what you lost. They compare every request with what is handed in
-        and will mark yours as matched when they find it.
-      </p>
-      <div className="panel">
+    <>
+      <PageTitle title="Report a lost item" back={{ to: '/app/requests', label: 'My requests' }} />
+      <Panel>
+        <p className="-mt-1 mb-[22px] text-[0.9rem] text-muted">
+          The office compares every request with what is handed in and marks yours as matched when they find it.
+        </p>
         <ItemForm mode="student" submitLabel="Save request" onSubmit={save} onCancel={() => navigate(-1)} />
-      </div>
-    </div>
+      </Panel>
+    </>
   );
 }

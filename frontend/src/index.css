@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* The design of prototype/style.css as Tailwind theme tokens (bg-navy, text-muted, border-line...). */
+@theme {
+  --color-navy: #123d50;
+  --color-tagline: #c8e3e8;
+  --color-teal: #087d8d;
+  --color-teal-dark: #056675;
+  --color-teal-soft: #e3f3f5;
+  --color-page: #f4f7fa;
+  --color-card: #fcfefe;
+  --color-ink: #19313d;
+  /* Prototype muted grey. On white it is 4.5:1; on the page background use muted-strong. */
+  --color-muted: #647985;
+  --color-muted-strong: #546c77;
+  --color-line: #e1e9ee;
+  /* Input borders: a darker step of the prototype's #bccdd5, so the edge of a field is 3:1. */
+  --color-field: #7f97a3;
+
+  --color-lost-bg: #fff1e8;
+  --color-lost: #a74d19;
+  --color-found-bg: #e3f7ed;
+  --color-found: #16663e;
+  --color-neutral-bg: #eef3f6;
+  --color-neutral: #3d5561;
+  --color-danger: #a33d3d;
+  --color-danger-line: #d4a6a6;
+  --color-danger-bg: #fff0f0;
+
+  --font-sans: Arial, Helvetica, sans-serif;
+
+  --radius-input: 8px;
+  --radius-button: 9px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+
+  --shadow-panel: 0 4px 20px #143b5010;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  /* Form controls as in the prototype. */
+  input:not([type='checkbox'], [type='radio'], [type='file']),
+  select,
+  textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    border: 1px solid var(--color-field);
+    border-radius: var(--radius-input);
+    padding: 10px 11px;
+    font: inherit;
+    background: #fff;
+    color: var(--color-ink);
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  input[aria-invalid='true'],
+  select[aria-invalid='true'],
+  textarea[aria-invalid='true'] {
+    border-color: var(--color-danger);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-teal);
+    outline-offset: 2px;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline-offset: 1px;
+  }
+
+  /* The top bar is navy, so its focus ring is light. */
+  .on-navy :focus-visible {
+    outline-color: #fff;
+  }
+}

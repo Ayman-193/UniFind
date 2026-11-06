@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Calendar, MapPin } from 'lucide-react';
 import { get, post } from '../../api.js';
 import { ItemForm, ItemPhoto } from '../../components/ItemViews.jsx';
-import { ErrorState, Spinner, StatusBadge, TypeBadge, formatDate, formatDateTime, reference, useToast } from '../../components/ui.jsx';
+import { ButtonLink, ErrorState, Loading, Note, PageTitle, Panel, StatusBadge, TypeBadge, formatDate, formatDateTime, useToast } from '../../components/ui.jsx';
 import { NotFound } from '../Auth.jsx';
 
 export default function ItemDetail() {
@@ -34,85 +35,75 @@ export default function ItemDetail() {
   }
 
   if (error?.status === 404) return <NotFound />;
-  if (error) return <div className="container page"><ErrorState error={error} onRetry={load} /></div>;
-  if (!item) return <div className="page-loader"><Spinner label="Loading item" /></div>;
+  if (error) return <div className="pt-8"><ErrorState error={error} onRetry={load} /></div>;
+  if (!item) return <Loading label="Loading item" />;
 
   const back = item.is_mine ? { to: '/app/requests', label: 'My requests' } : { to: '/app', label: 'Found items' };
 
   if (editing) {
     return (
-      <div className="container page page-narrow">
-        <Link to={`/app/items/${id}`} className="back-link">{item.title}</Link>
-        <h1>Edit request</h1>
-        <div className="panel">
+      <>
+        <PageTitle title="Edit request" back={{ to: `/app/items/${id}`, label: item.title }} />
+        <Panel>
           <ItemForm mode="student" initial={item} submitLabel="Save changes" onSubmit={save} onCancel={() => setParams({})} />
-        </div>
-      </div>
+        </Panel>
+      </>
     );
   }
 
   return (
-    <div className="container page">
-      <Link to={back.to} className="back-link">{back.label}</Link>
+    <>
+      <PageTitle
+        title={item.title}
+        back={back}
+        action={item.is_mine && item.can_edit ? <ButtonLink to="?edit=1">Edit request</ButtonLink> : null}
+      />
 
-      <article className={`detail detail-${item.type}`}>
-        <div className="detail-media">
-          <ItemPhoto item={item} className="detail-photo" />
+      <Panel>
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <TypeBadge type={item.type} />
+          <StatusBadge status={item.status} />
         </div>
+        <ItemPhoto item={item} />
+        <p className="mb-4 break-words whitespace-pre-line">{item.description}</p>
 
-        <div className="detail-body">
-          <div className="detail-tagline">
-            <span className="tag-ref">{reference(item.id)}</span>
-            <TypeBadge type={item.type} />
-            <StatusBadge status={item.status} />
-          </div>
-          <h1>{item.title}</h1>
-          <p className="detail-description">{item.description}</p>
-
-          <dl className="detail-facts">
-            <div><dt>Category</dt><dd>{item.category?.name}</dd></div>
-            <div><dt>{item.type === 'lost' ? 'Lost at' : 'Found at'}</dt><dd>{item.location?.name}</dd></div>
-            <div><dt>{item.type === 'lost' ? 'Date lost' : 'Date found'}</dt><dd>{formatDate(item.date_reported)}</dd></div>
-            {item.is_mine && <div><dt>Your contact</dt><dd>{item.contact_info || 'Not given'}</dd></div>}
-            {item.is_mine && <div><dt>Last updated</dt><dd>{formatDateTime(item.updated_at)}</dd></div>}
-          </dl>
-
-          {item.is_mine && item.status === 'found' && (
-            <div className="collect-callout">
-              <h2>Ready to collect</h2>
-              {item.admin_note && <p>{item.admin_note}</p>}
-              {item.matched_item && (
-                <p className="collect-match">
-                  Matched with {reference(item.matched_item.id)}, “{item.matched_item.title}”, handed in at {item.matched_item.location}.
-                </p>
-              )}
-            </div>
-          )}
-          {item.is_mine && item.status !== 'found' && item.admin_note && (
-            <p className="office-note"><strong>Note from the office:</strong> {item.admin_note}</p>
-          )}
-
-          {!item.is_mine && item.type === 'found' && (
-            <div className="claim-box">
-              <h2>Is this yours?</h2>
-              <p>
-                Go to Student Affairs, room 12, with your student card and quote <strong>{reference(item.id)}</strong>.
-                The office will ask you to describe one detail before handing it over.
-              </p>
-            </div>
-          )}
-
+        <dl className="grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-[max-content_1fr] sm:gap-y-2">
+          <dt className="font-bold">Category</dt>
+          <dd>{item.category?.name}</dd>
+          <dt className="font-bold">{item.type === 'lost' ? 'Lost at' : 'Found at'}</dt>
+          <dd className="flex items-center gap-1.5"><MapPin className="size-4 text-teal" aria-hidden="true" />{item.location?.name}</dd>
+          <dt className="font-bold">{item.type === 'lost' ? 'Date lost' : 'Date found'}</dt>
+          <dd className="flex items-center gap-1.5"><Calendar className="size-4 text-muted" aria-hidden="true" />{formatDate(item.date_reported)}</dd>
           {item.is_mine && (
-            <div className="detail-actions">
-              {item.can_edit ? (
-                <Link to="?edit=1" className="btn btn-primary">Edit request</Link>
-              ) : (
-                <p className="field-hint">The office has updated this request, so it can no longer be edited.</p>
-              )}
-            </div>
+            <>
+              <dt className="font-bold">Your contact</dt>
+              <dd>{item.contact_info || 'Not given'}</dd>
+              <dt className="font-bold">Last updated</dt>
+              <dd>{formatDateTime(item.updated_at)}</dd>
+            </>
           )}
-        </div>
-      </article>
-    </div>
+        </dl>
+
+        {item.is_mine && item.status === 'found' && (
+          <Note title="Ready to collect">
+            {item.admin_note && <p>{item.admin_note}</p>}
+            {item.matched_item && (
+              <p className="mt-1 text-sm text-muted">Matched with “{item.matched_item.title}”, handed in at {item.matched_item.location}.</p>
+            )}
+          </Note>
+        )}
+        {item.is_mine && item.status !== 'found' && item.admin_note && (
+          <Note title="Note from the office"><p>{item.admin_note}</p></Note>
+        )}
+        {!item.is_mine && item.type === 'found' && (
+          <Note title="Is this yours?">
+            <p>Go to Student Affairs, room 12, with your student card. The office will ask you to describe one detail before handing it over.</p>
+          </Note>
+        )}
+        {item.is_mine && !item.can_edit && (
+          <p className="mt-4 text-sm text-muted">The office has updated this request, so it can no longer be edited.</p>
+        )}
+      </Panel>
+    </>
   );
 }
