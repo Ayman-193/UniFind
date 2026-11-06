@@ -289,7 +289,11 @@ export function FilterBar({ value, onChange, fields = ['search', 'category', 'lo
 /* Item form (create and edit)                                         */
 /* ------------------------------------------------------------------ */
 
-const today = () => new Date().toISOString().slice(0, 10);
+// The local calendar date (toISOString would give the UTC date, a day behind after midnight in Saudi Arabia).
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const MAX_PHOTO = 3 * 1024 * 1024;
 
 /**

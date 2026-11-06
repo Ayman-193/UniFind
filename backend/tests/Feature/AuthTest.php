@@ -19,7 +19,7 @@ class AuthTest extends TestCase
 
     public function test_login_succeeds_and_returns_a_token_and_profile(): void
     {
-        $response = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345']);
+        $response = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345']);
 
         $response->assertOk()
             ->assertJsonStructure(['token', 'expires_at', 'user' => ['id', 'name', 'email', 'role']])
@@ -52,7 +52,7 @@ class AuthTest extends TestCase
 
     public function test_logout_revokes_the_token(): void
     {
-        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345'])->json('token');
+        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345'])->json('token');
 
         $this->withToken($token)->postJson('/api/auth/logout')->assertOk();
         $this->assertSame(0, $this->student->tokens()->count());
@@ -63,10 +63,10 @@ class AuthTest extends TestCase
 
     public function test_disabled_user_cannot_log_in_and_existing_tokens_stop_working(): void
     {
-        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345'])->json('token');
+        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345'])->json('token');
         $this->student->update(['is_active' => false]);
 
-        $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345'])->assertStatus(403);
+        $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345'])->assertStatus(403);
 
         $this->app['auth']->forgetGuards();
         $this->withToken($token)->getJson('/api/auth/me')->assertStatus(401);
@@ -74,7 +74,7 @@ class AuthTest extends TestCase
 
     public function test_expired_tokens_are_rejected(): void
     {
-        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345'])->json('token');
+        $token = $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345'])->json('token');
 
         $this->travel(13)->hours();
         $this->app['auth']->forgetGuards();
@@ -88,23 +88,6 @@ class AuthTest extends TestCase
         }
         $this->postJson('/api/auth/login', ['email' => 'student@uqu.edu.sa', 'password' => 'nope'])
             ->assertStatus(429)->assertJsonStructure(['message']);
-    }
-
-    public function test_demo_accounts_are_listed_in_demo_mode(): void
-    {
-        config(['unifind.demo_mode' => true]);
-
-        $this->getJson('/api/demo-accounts')->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.email', 'student@uqu.edu.sa')
-            ->assertJsonPath('data.1.email', 'admin@uqu.edu.sa');
-    }
-
-    public function test_demo_accounts_are_hidden_when_demo_mode_is_off(): void
-    {
-        config(['unifind.demo_mode' => false]);
-
-        $this->getJson('/api/demo-accounts')->assertOk()->assertExactJson(['data' => []]);
     }
 
     public function test_unknown_api_routes_return_json_404(): void

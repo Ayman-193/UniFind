@@ -60,18 +60,4 @@ class AuthController extends Controller
     {
         return response()->json(['user' => $request->user()->toProfile()]);
     }
-
-    public function demoAccounts(): JsonResponse
-    {
-        if (! config('unifind.demo_mode')) {
-            return response()->json(['data' => []]);
-        }
-
-        $password = config('unifind.demo_password');
-        $accounts = collect(config('unifind.demo_accounts'))
-            ->map(fn (array $account) => $account + ['password' => $password])
-            ->values();
-
-        return response()->json(['data' => $accounts]);
-    }
 }

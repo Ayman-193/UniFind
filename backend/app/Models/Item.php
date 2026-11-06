@@ -53,11 +53,6 @@ class Item extends Model
         return $query->where('type', 'found')->where('status', 'open');
     }
 
-    public function isPublicCatalogItem(): bool
-    {
-        return $this->type === 'found' && $this->status === 'open' && ! $this->trashed();
-    }
-
     /**
      * Applies the list filters shared by students and admins:
      * search, type, status, category_id, location_id, date_from, date_to.

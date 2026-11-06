@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { fieldError, get } from '../api.js';
+import { fieldError } from '../api.js';
 import { homeFor, useAuth } from '../auth.jsx';
 import { Brand } from '../components/Layouts.jsx';
 import { Field, Spinner, useToast } from '../components/ui.jsx';
@@ -19,19 +19,14 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
-  const [busy, setBusy] = useState(null);
-  const [demo, setDemo] = useState([]);
-
-  useEffect(() => {
-    get('/api/demo-accounts').then((d) => setDemo(d.data || [])).catch(() => setDemo([]));
-  }, []);
+  const [busy, setBusy] = useState(false);
 
   const from = location.state?.from;
 
   if (!loading && user) return <Navigate to={allowedFor(user, from) ? from : homeFor(user)} replace />;
 
-  async function signIn(credentials, key) {
-    setBusy(key);
+  async function signIn(credentials) {
+    setBusy(true);
     setErrors({});
     setFormError('');
     try {
@@ -45,7 +40,7 @@ export function Login() {
         setFormError(error.message);
       }
       toast.error(error.message);
-      setBusy(null);
+      setBusy(false);
     }
   }
 
@@ -55,7 +50,7 @@ export function Login() {
     if (!email.trim()) local.email = 'Enter your university email.';
     if (!password) local.password = 'Enter your password.';
     if (local.email || local.password) { setErrors(local); return; }
-    signIn({ email, password }, 'form');
+    signIn({ email, password });
   }
 
   return (
@@ -74,21 +69,6 @@ export function Login() {
           <h1>Sign in</h1>
           <p className="login-sub">Use your university account. Accounts are created by the Lost &amp; Found Office.</p>
 
-          {demo.length > 0 && (
-            <div className="demo-block">
-              <p className="demo-title">Demo accounts</p>
-              <div className="demo-buttons">
-                {demo.map((account) => (
-                  <button key={account.email} type="button" className={`btn ${account.role === 'admin' ? 'btn-navy' : 'btn-primary'} btn-block`}
-                    disabled={busy !== null} onClick={() => signIn(account, account.role)}>
-                    {busy === account.role && <Spinner />}{account.label}
-                  </button>
-                ))}
-              </div>
-              <p className="demo-note">Demo mode is on. These buttons sign in with seeded test accounts.</p>
-            </div>
-          )}
-
           <form onSubmit={submit} noValidate className="login-form">
             {formError && <p className="form-alert" role="alert">{formError}</p>}
             <Field label="Email" error={errors.email}>
@@ -97,8 +77,8 @@ export function Login() {
             <Field label="Password" error={errors.password}>
               {(p) => <input {...p} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
             </Field>
-            <button type="submit" className="btn btn-primary btn-block" disabled={busy !== null}>
-              {busy === 'form' && <Spinner />}Sign in
+            <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
+              {busy && <Spinner />}Sign in
             </button>
           </form>
         </div>

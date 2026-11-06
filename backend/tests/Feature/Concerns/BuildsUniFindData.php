@@ -17,8 +17,8 @@ trait BuildsUniFindData
 
     protected function buildBaseData(): void
     {
-        $this->admin = User::factory()->admin()->create(['email' => 'admin@uqu.edu.sa', 'password' => 'Demo@12345']);
-        $this->student = User::factory()->create(['email' => 'student@uqu.edu.sa', 'password' => 'Demo@12345']);
+        $this->admin = User::factory()->admin()->create(['email' => 'admin@uqu.edu.sa', 'password' => 'Test@12345']);
+        $this->student = User::factory()->create(['email' => 'student@uqu.edu.sa', 'password' => 'Test@12345']);
         $this->otherStudent = User::factory()->create();
         $this->category = Category::create(['name' => 'Electronics']);
         $this->location = Location::create(['name' => 'Main Library']);

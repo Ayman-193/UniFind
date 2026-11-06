@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Route;
 | Public
 */
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
-Route::get('/demo-accounts', [AuthController::class, 'demoAccounts']);
 
 /*
 | Any signed-in user (student or admin). Role rules are applied inside the controllers.

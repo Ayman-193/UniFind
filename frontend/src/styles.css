@@ -38,8 +38,6 @@
   --st-closed-bg: #eceff1;
   --danger: #b03030;
   --danger-bg: #fdecec;
-  --warn-bg: #fff6e0;
-  --warn-ink: #7a5300;
 
   --font-display: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Public Sans Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -60,7 +58,6 @@
   --s-5: 24px;
   --s-6: 32px;
   --s-7: 48px;
-  --s-8: 64px;
 
   --r-sm: 6px;
   --r-md: 10px;
@@ -135,8 +132,6 @@ main:focus { outline: none; }
 .btn-block { width: 100%; }
 .btn-primary { background: var(--teal); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--teal-dark); }
-.btn-navy { background: var(--navy); color: #fff; }
-.btn-navy:hover:not(:disabled) { background: var(--navy-deep); }
 .btn-accent { background: var(--teal-glow); color: var(--navy-deep); }
 .btn-accent:hover { background: #82d3dc; }
 .btn-quiet { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
@@ -412,7 +407,6 @@ main:focus { outline: none; }
 .toast-success .toast-icon { background: #3fbf86; color: var(--navy-deep); }
 .toast-error { background: #5c1a1a; }
 .toast-error .toast-icon { background: #ff9c9c; color: #5c1a1a; }
-.toast-info .toast-icon { background: var(--teal-glow); color: var(--navy-deep); }
 .toast-close { background: none; border: 0; color: inherit; opacity: .7; font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 4px; }
 .toast-close:hover { opacity: 1; }
 @keyframes toast-in { from { transform: translateY(8px); opacity: 0; } }
@@ -485,10 +479,6 @@ main:focus { outline: none; }
 .login-main { display: grid; place-items: center; padding: var(--s-6) var(--s-5); }
 .login-card { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: var(--s-4); }
 .login-sub { color: var(--ink-2); font-size: var(--t-sm); }
-.demo-block { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-md); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
-.demo-title { font-weight: 700; font-size: var(--t-sm); }
-.demo-buttons { display: grid; gap: var(--s-2); }
-.demo-note { font-size: var(--t-xs); color: var(--muted); }
 .login-form { display: flex; flex-direction: column; gap: var(--s-4); }
 
 .status-page { min-height: 100vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--s-4); max-width: 640px; margin: 0 auto; padding: var(--s-6) var(--s-5); }

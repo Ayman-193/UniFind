@@ -22,7 +22,6 @@ export function ToastProvider({ children }) {
   const api = useMemo(() => ({
     success: (message) => push('success', message),
     error: (message) => push('error', message),
-    info: (message) => push('info', message),
   }), [push]);
 
   return (
@@ -31,7 +30,7 @@ export function ToastProvider({ children }) {
       <div className="toasts" role="region" aria-label="Notifications">
         {toasts.map((t) => (
           <div key={t.id} className={`toast toast-${t.kind}`} role={t.kind === 'error' ? 'alert' : 'status'}>
-            <span className="toast-icon" aria-hidden="true">{t.kind === 'error' ? '!' : t.kind === 'success' ? '✓' : 'i'}</span>
+            <span className="toast-icon" aria-hidden="true">{t.kind === 'error' ? '!' : '✓'}</span>
             <p>{t.message}</p>
             <button type="button" className="toast-close" onClick={() => dismiss(t.id)} aria-label="Dismiss notification">×</button>
           </div>
