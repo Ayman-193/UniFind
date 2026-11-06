@@ -1,35 +1,93 @@
-# UniFind — Simple Version
+# UniFind: Campus Lost & Found
 
-A beginner-friendly university lost-and-found website built with **HTML, CSS and JavaScript**.
+A university lost-and-found system built for the Software Product Engineering course (three-sprint Scrum project).
+Students report lost items and check what the Lost & Found Office has found; the office manages every case.
 
-## Run it (no XAMPP required)
+## Stack
 
-1. Extract the ZIP file.
-2. Open the `UniFind_Simple` folder in Visual Studio Code (File > Open Folder).
-3. Double-click `index.html` in File Explorer to open it in Edge or Chrome.
-4. Add a report, search for it, filter by Lost/Found, or delete it.
+| Layer | Technology |
+|---|---|
+| Front end | React + Vite (`frontend/`) |
+| Back end | Laravel 12 REST API, Sanctum tokens (`backend/`) |
+| Database | MySQL on **port 3309** |
+| Runtime | PHP 8.4, Node 22+ |
 
-You can edit the HTML, CSS, and JavaScript in VS Code and refresh the browser to see changes. No Live Server extension is required.
+## Project structure
 
-## Files
+```
+unifind/
+├── README.md
+├── CLAUDE_CODE_PROMPT.md     build brief for Claude Code
+├── prototype/                original HTML/CSS/JS prototype (visual reference only)
+├── backend/                  Laravel 12 API (created with composer create-project)
+│   ├── app/Models/           User, Item, Category, Location, ActivityLog
+│   ├── app/Http/Middleware/  EnsureRole
+│   ├── app/Http/Controllers/ Auth, Meta, Item, Admin/{AdminItem, Dashboard, DbEditor}
+│   ├── app/Support/          DbEditorSchema (tables/columns the admin may edit)
+│   ├── config/unifind.php    demo mode, demo password
+│   ├── database/migrations/  users, categories, locations, items, activity_logs
+│   ├── database/seeders/     demo users and sample data
+│   ├── routes/api.php        all endpoints, grouped by role
+│   └── tests/Feature/        permission and workflow tests
+└── frontend/                 React SPA
+    └── src/
+        ├── main.jsx, App.jsx, api.js, auth.jsx, styles.css
+        ├── components/       layouts + route guard, item views, UI kit
+        └── pages/
+            ├── Auth.jsx      login (demo buttons), 403, 404
+            ├── student/      Browse, MyRequests, NewRequest, ItemDetail
+            └── admin/        Dashboard, Cases, CaseEdit, Database, Activity
+```
 
-- `index.html`: page layout and form
-- `style.css`: website appearance
-- `script.js`: add/search/filter/delete and browser storage
+## Roles
 
-## Important limitations
+| Action | Student | Admin |
+|---|---|---|
+| Browse open found items | ✓ | ✓ |
+| Create a lost request | ✓ | ✓ |
+| See own requests and their status | ✓ | all items |
+| Edit own request while it is open | ✓ | any item |
+| Register found items | | ✓ |
+| Change status, add note, link a match | | ✓ |
+| Remove (with reason) / restore items | | ✓ |
+| Dashboard, activity log, database editor | | ✓ |
 
-- Reports are stored in `localStorage` in **the current browser on the current device only**.
-- Other students cannot see the reports on their own devices.
-- Clearing browser site data may delete reports.
-- No login, accounts, shared database, claim workflow, or admin permissions are implemented.
-- The Delete button is available to anyone using that browser; it is not secure for real deployment.
-- Do not enter sensitive personal details. This is a classroom prototype, not a production service.
+Every rule is enforced by the API. The React route guards only control what is shown.
+Item status: `open` → `found` (matched, ready to collect) → `returned`, or `closed`.
 
-## Suggested sprint plan
+## Setup (Windows)
 
-- Sprint 1: requirements, product vision, UI design, user stories.
-- Sprint 2: build HTML/CSS and add local report storage.
-- Sprint 3: search, filter, testing, bug fixes and prototype demonstration.
+Prerequisites: PHP 8.4, Composer, Node 22+, MySQL running on port 3309.
 
-Update your report to match the actual features and work completed. Do not claim features have been tested until your team tests them.
+```bash
+# 1. Database
+mysql -u root -P 3309 -e "CREATE DATABASE unifind"
+
+# 2. Back end
+cd backend
+composer install
+copy .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan storage:link
+php artisan serve            # http://localhost:8000
+
+# 3. Front end (new terminal)
+cd frontend
+npm install
+npm run dev                  # http://localhost:5173
+```
+
+Run the API tests with `php artisan test` inside `backend/`.
+
+## Demo accounts
+
+Created by the seeder. They are fictional; no real people are needed.
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@uqu.edu.sa | Demo@12345 |
+| Student | student@uqu.edu.sa | Demo@12345 |
+
+With `DEMO_MODE=true` in `backend/.env`, the login page shows one-click **Continue as Student / Admin** buttons.
+Set `DEMO_MODE=false` to hide them.
