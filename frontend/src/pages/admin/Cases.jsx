@@ -40,7 +40,7 @@ function MatchPicker({ value, onChange, error }) {
 
   return (
     <fieldset>
-      <legend className="text-[0.92rem] font-bold">Matching found item</legend>
+      <legend className="text-sm font-bold">Matching found item</legend>
       <p className="mt-1 text-sm text-muted">Link the found item that belongs to this student. It is then reserved and leaves the public list.</p>
       <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search found items" aria-label="Search found items" />
       <div className="mt-2 max-h-56 space-y-1.5 overflow-y-auto" role="radiogroup" aria-label="Found items">
@@ -218,7 +218,7 @@ export default function Cases() {
 
       <Panel aria-labelledby="cases-title">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="cases-title" className="text-2xl">All cases</h2>
+          <h2 id="cases-title" className="text-section">All cases</h2>
           <div className="flex items-center gap-3">
             {meta && <span className="text-sm text-muted" aria-live="polite">{meta.total} {meta.total === 1 ? 'case' : 'cases'}</span>}
             <ViewToggle value={view} onChange={setView} />

@@ -78,8 +78,8 @@ Open http://localhost:5173 (use `localhost`, not `127.0.0.1`).
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@uqu.edu.sa | `0FtIeVVRml5Q6z@0` |
-| Student | student@uqu.edu.sa | `6nxqAgDg9gMskt+5` |
+| Admin | admin@uqu.edu.sa | `asd` |
+| Student | student@uqu.edu.sa | `asd` |
 
 These are the passwords set in `backend\.env`. If you change them there, run `php artisan migrate:fresh --seed` to apply them (this resets all data).
 

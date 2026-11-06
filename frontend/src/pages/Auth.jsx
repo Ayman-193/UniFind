@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { fieldError } from '../api.js';
 import { homeFor, useAuth } from '../auth.jsx';
-import { Button, ButtonLink, Field, Hero, Panel, useToast } from '../components/ui.jsx';
+import { Button, ButtonLink, Field, Hero, useToast } from '../components/ui.jsx';
 
 function allowedFor(user, path) {
   if (!path) return false;
@@ -52,24 +52,44 @@ export function Login() {
     signIn({ email, password });
   }
 
+  // The sign-in page as it was before the prototype redesign: a navy story panel and a sign-in card.
+  const input = 'mt-1.5 min-h-11 rounded-[6px] border-[#bdccd4] px-3';
+
   return (
-    <>
-      <Hero title="Find what matters." text="The campus Lost & Found Office, online. Check what has been handed in and report what you lost." />
-      <Panel className="max-w-md" aria-labelledby="signin-title">
-        <h2 id="signin-title" className="mb-1 text-2xl">Sign in</h2>
-        <p className="mb-5 text-[0.9rem] text-muted">Use your university account. Accounts are created by the Lost &amp; Found Office.</p>
-        <form onSubmit={submit} noValidate className="space-y-[15px]">
-          {formError && <p className="rounded-card border border-danger-line bg-danger-bg p-3 text-sm text-danger" role="alert">{formError}</p>}
-          <Field label="Email" error={errors.email}>
-            {(p) => <input {...p} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@uqu.edu.sa" />}
-          </Field>
-          <Field label="Password" error={errors.password}>
-            {(p) => <input {...p} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
-          </Field>
-          <Button type="submit" className="w-full" busy={busy} disabled={busy}>Sign in</Button>
-        </form>
-      </Panel>
-    </>
+    <div className="grid min-h-screen bg-[#f2f5f7] min-[861px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <section className="on-navy flex flex-col justify-between gap-4 bg-navy p-6 text-[#d3e8ed] min-[861px]:gap-8 min-[861px]:px-[clamp(24px,5vw,72px)] min-[861px]:py-8">
+        <Link to="/login" className="inline-flex items-center gap-2 self-start text-[1.45rem] font-extrabold tracking-[-0.02em] text-white no-underline">
+          <svg viewBox="0 0 32 32" aria-hidden="true" className="size-7">
+            <circle cx="14" cy="14" r="8" fill="none" stroke="currentColor" strokeWidth="3" />
+            <path d="M20 20l6.5 6.5" stroke="#5fc3cf" strokeWidth="3.6" strokeLinecap="round" />
+          </svg>
+          UniFind
+        </Link>
+        <div className="flex max-w-[34rem] flex-col gap-4">
+          <p className="text-[clamp(2.6rem,6vw,5rem)] leading-[0.95] font-extrabold tracking-[-0.045em] text-white">Find what matters.</p>
+          <p className="text-card">The campus Lost &amp; Found Office, online. Check what has been handed in, report what you lost, and get told when it turns up.</p>
+        </div>
+        <p className="hidden text-sm text-[#9fc4ce] min-[861px]:block">Student Affairs building, room 12</p>
+      </section>
+
+      <main id="main" className="grid place-items-center px-6 py-8">
+        <div className="flex w-full max-w-[400px] flex-col gap-4">
+          <h1 className="text-[2.25rem] leading-[1.15] font-extrabold tracking-[-0.01em]">Sign in</h1>
+          <p className="text-sm text-[#445d69]">Use your university account. Accounts are created by the Lost &amp; Found Office.</p>
+
+          <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+            {formError && <p className="rounded-[6px] bg-[#fdecec] p-3 text-sm text-[#7d1f1f]" role="alert">{formError}</p>}
+            <Field label="Email" error={errors.email}>
+              {(p) => <input {...p} className={input} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@uqu.edu.sa" />}
+            </Field>
+            <Field label="Password" error={errors.password}>
+              {(p) => <input {...p} className={input} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
+            </Field>
+            <Button type="submit" className="min-h-[42px] w-full rounded-[6px] text-sm font-semibold" busy={busy} disabled={busy}>Sign in</Button>
+          </form>
+        </div>
+      </main>
+    </div>
   );
 }
 

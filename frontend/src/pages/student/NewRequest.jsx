@@ -22,7 +22,7 @@ export default function NewRequest() {
     <>
       <PageTitle title="Report a lost item" back={{ to: '/app/requests', label: 'My requests' }} />
       <Panel>
-        <p className="-mt-1 mb-[22px] text-[0.9rem] text-muted">
+        <p className="-mt-1 mb-[22px] text-sm text-muted">
           The office compares every request with what is handed in and marks yours as matched when they find it.
         </p>
         <ItemForm mode="student" submitLabel="Save request" onSubmit={save} onCancel={() => navigate(-1)} />

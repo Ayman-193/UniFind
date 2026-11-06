@@ -90,11 +90,11 @@ function ItemCard({ item, to }) {
         {item.deleted_at ? <RemovedBadge /> : <TypeBadge type={item.type} />}
         {!item.deleted_at && item.status !== 'open' && <StatusBadge status={item.status} />}
       </div>
-      <h3 className="mt-[9px] mb-2 text-lg break-words">
+      <h3 className="mt-[9px] mb-2 text-card break-words">
         <Link to={to} className="text-ink no-underline after:absolute after:inset-0 after:content-[''] hover:underline">{item.title}</Link>
       </h3>
       <p className="my-[7px] flex items-center gap-1.5"><MapPin className="size-4 shrink-0 text-teal" aria-hidden="true" />{item.location?.name}</p>
-      <p className="my-[7px] flex items-center gap-1.5 text-[0.9rem] text-muted"><Calendar className="size-4 shrink-0" aria-hidden="true" />{formatDate(item.date_reported)}</p>
+      <p className="my-[7px] flex items-center gap-1.5 text-sm text-muted"><Calendar className="size-4 shrink-0" aria-hidden="true" />{formatDate(item.date_reported)}</p>
       <p className="my-[7px] line-clamp-3 break-words">{item.description}</p>
     </article>
   );
@@ -169,13 +169,13 @@ export function FilterBar({ value, onChange, admin = false }) {
 
   return (
     <div role="search" className={cn('mb-5 grid gap-[15px]', admin ? 'sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]' : 'sm:grid-cols-[2fr_1fr_1fr]')}>
-      <label className="block text-[0.92rem] font-bold sm:col-span-full lg:col-span-1">
+      <label className="block text-sm font-bold sm:col-span-full lg:col-span-1">
         Search
         <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or description..." />
       </label>
       {admin && (
         <>
-          <label className="block text-[0.92rem] font-bold">
+          <label className="block text-sm font-bold">
             Type
             <select value={value.type || ''} onChange={set('type')}>
               <option value="">All types</option>
@@ -183,7 +183,7 @@ export function FilterBar({ value, onChange, admin = false }) {
               <option value="found">Found</option>
             </select>
           </label>
-          <label className="block text-[0.92rem] font-bold">
+          <label className="block text-sm font-bold">
             Status
             <select value={status} onChange={setStatus}>
               <option value="">Any status</option>
@@ -196,14 +196,14 @@ export function FilterBar({ value, onChange, admin = false }) {
           </label>
         </>
       )}
-      <label className="block text-[0.92rem] font-bold">
+      <label className="block text-sm font-bold">
         Category
         <select value={value.category_id || ''} onChange={set('category_id')}>
           <option value="">All categories</option>
           {meta.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </label>
-      <label className="block text-[0.92rem] font-bold">
+      <label className="block text-sm font-bold">
         Location
         <select value={value.location_id || ''} onChange={set('location_id')}>
           <option value="">Any location</option>
@@ -390,7 +390,7 @@ export function ItemForm({ initial, mode = 'student', submitLabel, onSubmit, onC
       </Field>
 
       <div className="mb-5">
-        <p className="text-[0.92rem] font-bold" id="photo-label">Photo <span className="font-normal text-muted">(optional, JPG, PNG or WebP, up to 3 MB)</span></p>
+        <p className="text-sm font-bold" id="photo-label">Photo <span className="font-normal text-muted">(optional, JPG, PNG or WebP, up to 3 MB)</span></p>
         <div className="mt-1.5 flex flex-wrap items-center gap-3">
           {shown && <img src={shown} alt="Selected item" className="size-20 rounded-input border border-line object-cover" />}
           <label className="cursor-pointer rounded-button border border-field bg-white px-3 py-1.5 text-sm font-bold hover:bg-page has-focus-visible:outline-2 has-focus-visible:outline-teal">

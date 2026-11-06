@@ -20,7 +20,7 @@ export default function MyRequests() {
       <PageTitle title="My requests" action={<ButtonLink to="/app/requests/new">Report a lost item</ButtonLink>} />
 
       <Panel>
-        <label className="mb-5 block max-w-xs text-[0.92rem] font-bold">
+        <label className="mb-5 block max-w-xs text-sm font-bold">
           Status
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">All requests</option>
@@ -45,12 +45,12 @@ export default function MyRequests() {
               {rows.map((item) => (
                 <li key={item.id} className="rounded-card border border-line bg-card p-[18px]">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <h2 className="text-lg break-words">
+                    <h2 className="text-card break-words">
                       <Link to={`/app/items/${item.id}`} className="text-ink hover:underline">{item.title}</Link>
                     </h2>
                     <StatusBadge status={item.status} />
                   </div>
-                  <p className="mt-1 flex flex-wrap gap-x-4 text-[0.9rem] text-muted">
+                  <p className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted">
                     <span className="flex items-center gap-1.5"><MapPin className="size-4" aria-hidden="true" />{item.location?.name}</span>
                     <span className="flex items-center gap-1.5"><Calendar className="size-4" aria-hidden="true" />Lost {formatDate(item.date_reported)}</span>
                   </p>
@@ -59,8 +59,8 @@ export default function MyRequests() {
                     <p className="mt-2"><strong>Ready to collect.</strong> {item.admin_note}</p>
                   ) : (
                     <>
-                      <p className="mt-2 text-[0.95rem]">{STATUS_HELP[item.status]}</p>
-                      {item.admin_note && <p className="mt-1 text-[0.95rem]"><strong>Note from the office:</strong> {item.admin_note}</p>}
+                      <p className="mt-2 text-base">{STATUS_HELP[item.status]}</p>
+                      {item.admin_note && <p className="mt-1 text-base"><strong>Note from the office:</strong> {item.admin_note}</p>}
                     </>
                   )}
 

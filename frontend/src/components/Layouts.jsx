@@ -46,12 +46,12 @@ function TopBar() {
             <button type="button" onClick={signOut} className="cursor-pointer rounded-button border border-white/40 px-3 py-1.5 font-bold text-white hover:bg-white/10">Sign out</button>
           </div>
         ) : (
-          <span className="hidden text-[0.9rem] text-tagline sm:inline">Campus Lost &amp; Found</span>
+          <span className="hidden text-sm text-tagline sm:inline">Campus Lost &amp; Found</span>
         )}
       </div>
       {user && (
         <nav aria-label="Main" className="border-t border-white/15">
-          <div className={cn(container, 'flex flex-wrap gap-x-5 gap-y-1 py-2 text-[0.95rem]')}>
+          <div className={cn(container, 'flex flex-wrap gap-x-5 gap-y-1 py-2 text-base')}>
             {NAV[user.role].map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end}
                 className={({ isActive }) => cn('border-b-2 py-1 font-bold no-underline', isActive ? 'border-white text-white' : 'border-transparent text-tagline hover:text-white')}>
@@ -67,7 +67,7 @@ function TopBar() {
 
 function Footer() {
   return (
-    <footer className={cn(container, 'pt-1.5 pb-[30px] text-[0.85rem] text-muted-strong')}>
+    <footer className={cn(container, 'pt-1.5 pb-[30px] text-sm text-muted-strong')}>
       UniFind &bull; Lost &amp; Found Office, Student Affairs building, room 12 &bull; Sunday to Thursday, 8:00 to 14:00
     </footer>
   );

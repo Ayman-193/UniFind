@@ -67,7 +67,7 @@ export default function ItemDetail() {
         <ItemPhoto item={item} />
         <p className="mb-4 break-words whitespace-pre-line">{item.description}</p>
 
-        <dl className="grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-[max-content_1fr] sm:gap-y-2">
+        <dl className="grid gap-x-6 gap-y-1 text-base sm:grid-cols-[max-content_1fr] sm:gap-y-2">
           <dt className="font-bold">Category</dt>
           <dd>{item.category?.name}</dd>
           <dt className="font-bold">{item.type === 'lost' ? 'Lost at' : 'Found at'}</dt>

@@ -33,7 +33,7 @@ export default function Browse() {
 
       <Panel aria-labelledby="list-title" className="scroll-mt-4">
         <div ref={listRef} tabIndex={-1} className="mb-4 flex flex-wrap items-center justify-between gap-3 outline-none">
-          <h2 id="list-title" className="text-2xl">Found items</h2>
+          <h2 id="list-title" className="text-section">Found items</h2>
           <div className="flex items-center gap-3">
             {meta && <span className="text-sm text-muted" aria-live="polite">{meta.total} {meta.total === 1 ? 'item' : 'items'}</span>}
             <ViewToggle value={view} onChange={setView} />

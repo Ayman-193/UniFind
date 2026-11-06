@@ -49,8 +49,8 @@ export default function Activity() {
     <>
       <PageTitle title="Activity log" />
       <Panel>
-        <p className="-mt-1 mb-4 text-[0.9rem] text-muted">Every sign-in, case change and database edit, newest first. Entries cannot be edited or deleted.</p>
-        <label className="mb-5 block max-w-xs text-[0.92rem] font-bold">
+        <p className="-mt-1 mb-4 text-sm text-muted">Every sign-in, case change and database edit, newest first. Entries cannot be edited or deleted.</p>
+        <label className="mb-5 block max-w-xs text-sm font-bold">
           Action
           <select value={action} onChange={(e) => { setAction(e.target.value); setPage(1); }}>
             <option value="">All actions</option>

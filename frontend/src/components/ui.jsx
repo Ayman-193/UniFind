@@ -67,8 +67,8 @@ export function Note({ title, children }) {
 export function Hero({ title, text, action, eyebrow }) {
   return (
     <section className="pt-[52px] pb-10">
-      {eyebrow && <p className="mb-1 text-lg font-bold text-teal-dark">{eyebrow}</p>}
-      <h1 className="mb-2 text-[clamp(2rem,5vw,3rem)] break-words">{title}</h1>
+      {eyebrow && <p className="mb-1 text-card font-bold text-teal-dark">{eyebrow}</p>}
+      <h1 className="mb-2 text-hero break-words">{title}</h1>
       <p className={cn('text-muted-strong', action ? 'mb-[23px]' : '')}>{text}</p>
       {action}
     </section>
@@ -81,7 +81,7 @@ export function PageTitle({ title, back, action }) {
     <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
       <div className="min-w-0">
         {back && <Link to={back.to} className="text-sm font-bold text-teal-dark hover:underline">&larr; {back.label}</Link>}
-        <h1 className="mt-1 text-[clamp(1.6rem,4vw,2.2rem)] break-words">{title}</h1>
+        <h1 className="mt-1 text-title break-words">{title}</h1>
       </div>
       {action}
     </div>
@@ -92,7 +92,7 @@ export function PageTitle({ title, back, action }) {
 /* Badges                                                              */
 /* ------------------------------------------------------------------ */
 
-const badge = 'inline-block rounded-full px-2.5 py-0.5 text-[0.8rem] font-bold whitespace-nowrap';
+const badge = 'inline-block rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap';
 
 export const STATUS_LABELS = { open: 'Open', found: 'Matched', returned: 'Returned', closed: 'Closed' };
 
@@ -180,7 +180,7 @@ export function Field({ label, error, hint, required, children, className }) {
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-[0.92rem] font-bold">
+      <label htmlFor={id} className="block text-sm font-bold">
         {label}
         {required && <span className="text-danger" aria-hidden="true"> *</span>}
       </label>
@@ -287,7 +287,7 @@ export function Modal({ open, title, onClose, children, footer, wide = false, bu
       <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId}
         className={cn('w-full rounded-panel border border-line bg-white shadow-panel', wide ? 'max-w-2xl' : 'max-w-md')}>
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
-          <h2 id={titleId} className="text-lg break-words">{title}</h2>
+          <h2 id={titleId} className="text-card break-words">{title}</h2>
           <button type="button" className="cursor-pointer text-muted hover:text-ink" onClick={onClose} disabled={busy} aria-label="Close dialog">
             <X className="size-5" aria-hidden="true" />
           </button>

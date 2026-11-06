@@ -185,12 +185,12 @@ function TableView({ name, onCountsChanged }) {
   return (
     <section aria-labelledby="db-table-title">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-[15px]">
-        <h2 id="db-table-title" className="text-2xl">
+        <h2 id="db-table-title" className="text-section">
           {table?.label || name}
           {table?.readonly && <span className="ml-2 align-middle text-sm font-normal text-muted">(read-only)</span>}
         </h2>
         <div className="flex w-full flex-wrap items-end gap-[15px] sm:w-auto">
-          <label className="block min-w-0 flex-1 text-[0.92rem] font-bold sm:w-64">
+          <label className="block min-w-0 flex-1 text-sm font-bold sm:w-64">
             Search
             <input type="search" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search this table" />
           </label>
@@ -276,7 +276,7 @@ export default function Database() {
     <>
       <PageTitle title="Database" />
       <Panel>
-        <p className="-mt-1 mb-4 text-[0.9rem] text-muted">Edit the tables UniFind uses. Passwords are never shown, and every change is written to the activity log.</p>
+        <p className="-mt-1 mb-4 text-sm text-muted">Edit the tables UniFind uses. Passwords are never shown, and every change is written to the activity log.</p>
         {error ? <ErrorState error={error} onRetry={loadTables} /> : !tables ? <Loading label="Loading tables" /> : (
           <>
             <nav aria-label="Tables" className="mb-6 flex flex-wrap gap-2">

@@ -15,10 +15,11 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomeRedirect />} />
+      {/* The sign-in page has its own full-screen layout. */}
+      <Route path="/login" element={<Login />} />
 
-      {/* Every page shares the same top bar, content width and footer. */}
+      {/* Every other page shares the same top bar, content width and footer. */}
       <Route element={<AppLayout />}>
-        <Route path="/login" element={<Login />} />
         <Route path="/403" element={<Forbidden />} />
 
         <Route path="/app" element={<RequireRole role="student" />}>

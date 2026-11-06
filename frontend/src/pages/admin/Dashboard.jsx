@@ -58,7 +58,7 @@ export default function Dashboard() {
         {COUNTERS.map((k) => (
           <li key={k.key}>
             <Link to={k.to} className="block h-full rounded-card border border-line bg-white p-4 text-ink no-underline shadow-panel hover:border-teal">
-              <span className="block text-3xl font-bold">{stats.counters[k.key]}</span>
+              <span className="block text-title font-bold">{stats.counters[k.key]}</span>
               <span className="text-sm text-muted">{k.label}</span>
             </Link>
           </li>
@@ -66,7 +66,7 @@ export default function Dashboard() {
       </ul>
 
       <Panel aria-labelledby="chart-title">
-        <h2 id="chart-title" className="mb-1 text-xl">Items reported per day</h2>
+        <h2 id="chart-title" className="mb-1 text-section">Items reported per day</h2>
         <p className="mb-4 text-sm text-muted">Last 14 days, {total14} in total.</p>
         <DailyBars data={stats.per_day} />
         <p className="mt-1 flex justify-between text-xs text-muted" aria-hidden="true">
@@ -76,7 +76,7 @@ export default function Dashboard() {
 
       <Panel aria-labelledby="activity-title">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="activity-title" className="text-xl">Recent activity</h2>
+          <h2 id="activity-title" className="text-section">Recent activity</h2>
           <Link to="/admin/activity" className="text-sm font-bold text-teal-dark hover:underline">Open the activity log</Link>
         </div>
         {stats.recent_activity.length === 0 ? (

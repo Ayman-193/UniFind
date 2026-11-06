@@ -10,7 +10,7 @@ const back = { to: '/admin/cases', label: 'Cases' };
 
 function Facts({ rows }) {
   return (
-    <dl className="grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-[max-content_1fr] sm:gap-y-2">
+    <dl className="grid gap-x-6 gap-y-1 text-base sm:grid-cols-[max-content_1fr] sm:gap-y-2">
       {rows.filter(Boolean).map(([label, value]) => (
         <div key={label} className="contents">
           <dt className="font-bold">{label}</dt>
@@ -64,7 +64,7 @@ export default function CaseEdit() {
       <>
         <PageTitle title="Add found item" back={back} />
         <Panel>
-          <p className="-mt-1 mb-[22px] text-[0.9rem] text-muted">Register something that was handed in. Open found items appear on the student page straight away.</p>
+          <p className="-mt-1 mb-[22px] text-sm text-muted">Register something that was handed in. Open found items appear on the student page straight away.</p>
           <ItemForm mode="admin" submitLabel="Save item" onSubmit={save} onCancel={() => navigate('/admin/cases')} />
         </Panel>
       </>
@@ -96,7 +96,7 @@ export default function CaseEdit() {
 
       <Panel aria-labelledby="case-title">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="case-title" className="text-xl">Case</h2>
+          <h2 id="case-title" className="text-section">Case</h2>
           <div className="flex flex-wrap gap-1.5">
             <TypeBadge type={item.type} />
             {removed ? <RemovedBadge /> : <StatusBadge status={item.status} />}
@@ -124,7 +124,7 @@ export default function CaseEdit() {
       </Panel>
 
       <Panel aria-labelledby="details-title">
-        <h2 id="details-title" className="mb-4 text-xl">Details</h2>
+        <h2 id="details-title" className="mb-4 text-section">Details</h2>
         {removed ? (
           <p className="text-muted">{item.description}</p>
         ) : (
